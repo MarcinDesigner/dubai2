@@ -48,6 +48,12 @@ export default function RootLayout({ children }) {
                       Baza wiedzy
                     </a>
                     <a
+                      href="/dashboard/learning"
+                      className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      🧠 Uczenie AI
+                    </a>
+                    <a
                       href="/dashboard/settings"
                       className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                     >

@@ -35,31 +35,102 @@ export async function detectLanguageClaude(text) {
   }
 }
 
-// Generate response with Claude
+// Generate response with Claude using knowledge base
 export async function generateResponseClaude(emailContent, language = 'pl', senderInfo = {}) {
   try {
+    // Pobierz wszystkie aktywne wpisy z bazy wiedzy
+    const knowledgeBase = await getRelevantKnowledge(emailContent);
+    
+    // Stwórz kontekst z bazy wiedzy
+    let knowledgeContext = '';
+    let hasRelevantKnowledge = false;
+    
+    if (knowledgeBase.length > 0) {
+      // Sprawdź czy wpisy z bazy wiedzy rzeczywiście pasują do pytania
+      const emailLower = emailContent.toLowerCase();
+      const relevantEntries = knowledgeBase.filter(item => {
+        const searchText = `${item.title} ${item.content} ${item.category}`.toLowerCase();
+        const keywords = emailLower.split(' ').filter(word => word.length > 2);
+        return keywords.some(keyword => searchText.includes(keyword));
+      });
+      
+      if (relevantEntries.length > 0) {
+        knowledgeContext = `
+TWOJA BAZA WIEDZY - UŻYWAJ TYLKO TYCH INFORMACJI:
+
+${relevantEntries.map(item => `
+${item.title.toUpperCase()}:
+${item.content}
+Kategoria: ${item.category}
+${item.tags ? `Tagi: ${JSON.parse(item.tags).join(', ')}` : ''}
+`).join('\n---\n')}
+
+WAŻNE: Używaj TYLKO informacji z powyższej bazy wiedzy. NIE WYMYŚLAJ własnych cen, hoteli ani ofert!`;
+        hasRelevantKnowledge = true;
+      } else {
+        // Wszystkie wpisy z bazy wiedzy dla kontekstu, ale oznacz jako niepassujące
+        knowledgeContext = `
+TWOJA BAZA WIEDZY (dostępne oferty, ale niekoniecznie pasujące do pytania):
+
+${knowledgeBase.map(item => `
+${item.title.toUpperCase()}:
+${item.content}
+Kategoria: ${item.category}
+${item.tags ? `Tagi: ${JSON.parse(item.tags).join(', ')}` : ''}
+`).join('\n---\n')}
+
+WAŻNE: Klient pyta o coś czego nie masz w bazie wiedzy. Przyznaj się do braku informacji i zaproponuj sprawdzenie.`;
+        hasRelevantKnowledge = false;
+      }
+    }
+    
+    // Jeśli brak odpowiednich informacji, zapisz do kolejki uczenia
+    if (!hasRelevantKnowledge) {
+      try {
+        console.log(`📚 Zapisuję pytanie do learning queue: ${emailContent.substring(0, 50)}...`);
+        await saveLearningQuestion(emailContent, senderInfo.email || 'unknown', language);
+      } catch (error) {
+        console.error('❌ Błąd zapisywania do learning queue:', error);
+      }
+    }
+
+    const languageNames = {
+      'pl': 'Polish',
+      'en': 'English', 
+      'de': 'German',
+      'fr': 'French',
+      'es': 'Spanish',
+      'it': 'Italian',
+      'ru': 'Russian'
+    };
+
     const message = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022", // Najlepszy model dla generowania odpowiedzi
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 1500,
       messages: [{
         role: "user",
         content: `You are a professional travel agent specializing in Dubai trips. 
-        
-        Respond to this customer inquiry in ${language === 'pl' ? 'Polish' : language === 'en' ? 'English' : 'German'} language:
-        
-        "${emailContent}"
-        
-        Provide a helpful, professional response with:
-        - Hotel recommendations with approximate prices in local currency
-        - Popular attractions and activities
-        - Weather information if dates mentioned
-        - Practical travel tips
-        - Contact information for follow-up
-        
-        Keep the response warm, professional, and around 800-1200 characters.
-        Include relevant emojis to make it engaging.
-        
-        Sign as: "Marcin - Dubai Travel Expert, Dubai Travel Experts"`
+
+${knowledgeContext}
+
+CUSTOMER EMAIL:
+"${emailContent}"
+
+INSTRUCTIONS:
+- Respond ONLY in ${languageNames[language] || 'Polish'} language
+- Use ONLY the information from YOUR KNOWLEDGE BASE above
+- If the customer asks about something not in your knowledge base, politely say you'll check and get back to them
+- DO NOT invent prices, hotels, or offers that are not in your knowledge base
+- Be helpful and professional
+- Include relevant information from your knowledge base that matches the customer's inquiry
+- End with contact information and encouragement to call or email for more details
+- Keep response around 800-1200 characters
+- Sign as: "Marcin - Dubai Travel Expert, Dubai Travel Experts"
+
+If you don't have specific information in your knowledge base, say something like:
+- Polish: "Sprawdzę szczegóły tej oferty i skontaktuję się z Państwem"
+- English: "I'll check the details of this offer and get back to you"
+- German: "Ich werde die Details dieses Angebots prüfen und mich bei Ihnen melden"`
       }]
     });
 
@@ -246,21 +317,38 @@ WAŻNE: Zawsze odpowiadaj w języku ${language}. Jeśli klient pyta o konkretne 
 // Helper functions (same as in ai.js)
 async function getRelevantKnowledge(query) {
   try {
-    const knowledge = await prisma.knowledge_base.findMany({
+    // Najpierw spróbuj znaleźć wszystkie aktywne wpisy
+    const allKnowledge = await prisma.knowledgeBase.findMany({
       where: {
-        isActive: true,
-        OR: [
-          { title: { contains: query.substring(0, 50) } },
-          { content: { contains: query.substring(0, 50) } },
-          { tags: { contains: 'dubai' } }
-        ]
+        isActive: true
       },
-      take: 5,
       orderBy: { updatedAt: 'desc' }
     });
-    return knowledge;
+
+    console.log(`📚 Znaleziono ${allKnowledge.length} wpisów w bazie wiedzy`);
+
+    // Jeśli mamy wpisy, zwróć wszystkie (lub przefiltrowane)
+    if (allKnowledge.length > 0) {
+      // Możesz dodać prostą filtrację po słowach kluczowych
+      const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+      
+      if (keywords.length > 0) {
+        const filtered = allKnowledge.filter(item => {
+          const searchText = `${item.title} ${item.content} ${item.category}`.toLowerCase();
+          return keywords.some(keyword => searchText.includes(keyword));
+        });
+        
+        // Jeśli znaleziono pasujące, zwróć je, w przeciwnym razie zwróć wszystkie
+        return filtered.length > 0 ? filtered : allKnowledge;
+      }
+      
+      return allKnowledge;
+    }
+
+    console.log('⚠️ Brak wpisów w bazie wiedzy');
+    return [];
   } catch (error) {
-    console.error('Error fetching knowledge:', error);
+    console.error('❌ Błąd pobierania bazy wiedzy:', error);
     return [];
   }
 }
@@ -314,4 +402,78 @@ async function getAttractionInfo() {
       category: "adventure"
     }
   ];
+}
+
+// Funkcja do zapisywania pytań bez odpowiedzi do kolejki uczenia
+async function saveLearningQuestion(question, customerEmail, language = 'pl') {
+  try {
+    // Kategoryzuj pytanie
+    const category = await categorizeEmailClaude(question);
+    
+    // Wyciągnij słowa kluczowe
+    const keywords = extractKeywords(question);
+    
+    // Zapisz do bazy
+    const learningEntry = await prisma.learningQueue.create({
+      data: {
+        customerEmail,
+        question,
+        category: category.category || 'unknown',
+        language,
+        keywords: JSON.stringify(keywords),
+        context: JSON.stringify({
+          sentiment: category.sentiment,
+          urgency: category.urgency,
+          topics: category.topics,
+          hasSpecificDates: category.hasSpecificDates,
+          priceRange: category.priceRange
+        }),
+        status: 'pending',
+        priority: determineLearningPriority(question, keywords, category),
+        createdAt: new Date()
+      }
+    });
+
+    console.log(`📚 Dodano do kolejki uczenia: ${question.substring(0, 50)}... (ID: ${learningEntry.id})`);
+    return learningEntry;
+  } catch (error) {
+    console.error('❌ Błąd zapisywania pytania do learning queue:', error);
+    throw error;
+  }
+}
+
+// Funkcja do wyciągania słów kluczowych z pytania
+function extractKeywords(text) {
+  const commonWords = ['i', 'a', 'o', 'w', 'z', 'na', 'do', 'czy', 'jak', 'co', 'gdzie', 'kiedy', 'ile', 'and', 'or', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+  
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !commonWords.includes(word))
+    .slice(0, 10); // Maksymalnie 10 słów kluczowych
+}
+
+// Funkcja do określania priorytetu pytania
+function determineLearningPriority(question, keywords, category) {
+  const highPriorityKeywords = ['cena', 'koszt', 'ile', 'price', 'cost', 'hotel', 'rezerwacja', 'booking', 'urgent', 'pilne'];
+  const mediumPriorityKeywords = ['informacja', 'info', 'details', 'szczegóły', 'dostępność', 'availability'];
+  
+  const questionLower = question.toLowerCase();
+  
+  // Wysoki priorytet
+  if (category.urgency === 'high' || 
+      category.purchaseProbability > 0.7 ||
+      highPriorityKeywords.some(keyword => questionLower.includes(keyword))) {
+    return 'high';
+  }
+  
+  // Średni priorytet
+  if (category.urgency === 'medium' || 
+      category.purchaseProbability > 0.4 ||
+      mediumPriorityKeywords.some(keyword => questionLower.includes(keyword))) {
+    return 'medium';
+  }
+  
+  return 'low';
 } 

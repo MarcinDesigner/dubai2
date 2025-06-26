@@ -286,8 +286,29 @@ model AgentSettings {
   @@map("agent_settings")
 }
 
+model LearningQueue {
+  id            String   @id @default(cuid())
+  customerEmail String
+  question      String
+  category      String   @default("unknown")
+  language      String   @default("pl")
+  keywords      String?  // JSON string of array
+  context       String?  // JSON string with additional context
+  status        String   @default("pending") // pending, resolved, ignored
+  priority      String   @default("low")     // low, medium, high
+  answer        String?  // Answer provided by admin
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("learning_queue")
+}
+
 // Additional enums replaced with String for SQLite compatibility
 // EmailStatus: PENDING, PROCESSING, RESPONDED, FAILED, IGNORED, ESCALATED
 // ConversationStatus: ACTIVE, RESOLVED, ESCALATED, ARCHIVED
 // MessageSender: CLIENT, AGENT, SYSTEM
-// KnowledgeCategory: HOTELS, ATTRACTIONS, RESTAURANTS, TRANSPORT, WEATHER, GENERAL, FAQ 
+// KnowledgeCategory: HOTELS, ATTRACTIONS, RESTAURANTS, TRANSPORT, WEATHER, GENERAL, FAQ
+// LearningStatus: pending, resolved, ignored
+// LearningPriority: low, medium, high 

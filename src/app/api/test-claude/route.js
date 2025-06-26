@@ -38,7 +38,7 @@ export async function GET() {
 
     console.log('🤖 Generowanie odpowiedzi...');
     const response = await generateResponseClaude(testEmail);
-    console.log(`Odpowiedź wygenerowana: ${response.response.length} znaków`);
+    console.log(`Odpowiedź wygenerowana: ${response.length} znaków`);
 
     return NextResponse.json({
       success: true,
@@ -55,10 +55,8 @@ export async function GET() {
         },
         responseGeneration: {
           success: true,
-          responseLength: response.response.length,
-          detectedLanguage: response.detectedLanguage,
-          provider: response.provider,
-          preview: response.response.substring(0, 200) + '...'
+          responseLength: response.length,
+          preview: response.substring(0, 200) + '...'
         }
       },
       fullResponse: response
