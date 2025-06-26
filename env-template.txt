@@ -1,0 +1,57 @@
+# Environment Variables Template for Dubai Travel AI Agent
+# Copy this file to .env.local and fill in your actual values
+
+# Database
+DATABASE_URL="file:./dev.db"
+
+# AI Providers
+OPENAI_API_KEY="your-openai-api-key"
+ANTHROPIC_API_KEY="your-claude-api-key"
+AI_PROVIDER="auto"  # Options: "openai", "claude", "auto", "fallback"
+
+# Email Settings - SMTP (wysyłanie)
+SMTP_HOST="smtp.zenbox.pl"
+SMTP_PORT=587
+SMTP_USER="marcin@deximlabs.com"
+SMTP_PASS="your-email-password"
+
+# Email Settings - IMAP (pobieranie)
+IMAP_HOST="imap.zenbox.pl"
+IMAP_PORT=993
+IMAP_USER="marcin@deximlabs.com"  # Może być taki sam jak SMTP_USER
+IMAP_PASS="your-email-password"   # Może być takie samo jak SMTP_PASS
+
+# Gmail API (alternatywa dla IMAP)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_REFRESH_TOKEN="your-refresh-token"
+
+# App Settings
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Webhook URL for Gmail
+WEBHOOK_URL="https://yourdomain.com/api/email/webhook"
+
+# Human agent notification
+HUMAN_AGENT_EMAIL="agent@dubaitravel.com"
+
+# Przykładowe konfiguracje dla popularnych dostawców:
+#
+# Gmail:
+# IMAP_HOST="imap.gmail.com"
+# IMAP_PORT=993
+# SMTP_HOST="smtp.gmail.com"
+# SMTP_PORT=587
+#
+# Outlook/Hotmail:
+# IMAP_HOST="outlook.office365.com"
+# IMAP_PORT=993
+# SMTP_HOST="smtp.office365.com"
+# SMTP_PORT=587
+#
+# Yahoo:
+# IMAP_HOST="imap.mail.yahoo.com"
+# IMAP_PORT=993
+# SMTP_HOST="smtp.mail.yahoo.com"
+# SMTP_PORT=587 

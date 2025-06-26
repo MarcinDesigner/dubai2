@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Email {
+  id          String   @id @default(cuid())
+  messageId   String   @unique
+  from        String
+  to          String
+  subject     String
+  content     String
+  processed   Boolean  @default(false)
+  responded   Boolean  @default(false)
+  response    String?
+  status      String @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  conversation Conversation?
+  
+  @@map("emails")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  emailId   String   @unique
+  clientEmail String
+  clientId  String?
+  topic     String?
+  summary   String?
+  language  String?  // Dodane pole dla języka
+  sentiment String?  // Sentiment analysis result
+  priority  String @default("MEDIUM") // Priority based on sentiment
+  escalated Boolean  @default(false)  // Whether escalated to human
+  purchaseProbability Float? // Predicted purchase probability (0-1)
+  status    String @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  email     Email    @relation(fields: [emailId], references: [id])
+  client    ClientProfile? @relation(fields: [clientId], references: [id])
+  messages  Message[]
+  purchaseAlerts PurchaseAlert[]
+  
+  @@map("conversations")
+}
+
+model ClientProfile {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  phone         String?
+  preferredLanguage String?
+  
+  // Preferences learned from conversations
+  budgetRange   String?  // "budget|mid-range|luxury"
+  travelStyle   String?  // "adventure|relaxation|cultural|business"
+  groupSize     Int?     // Typical group size
+  seasonPreference String? // "winter|summer|shoulder"
+  hotelPreference String? // "beach|city|desert"
+  
+  // Behavioral data
+  averageSpend  Float?   // Average booking value
+  bookingFrequency String? // "frequent|occasional|first-time"
+  responseTime  Int?     // How quickly they usually respond (hours)
+  
+  // Calculated scores
+  loyaltyScore  Float?   // 0-1 based on repeat bookings
+  valueScore    Float?   // 0-1 based on average spend
+  engagementScore Float? // 0-1 based on email interactions
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  conversations Conversation[]
+  interactions  ClientInteraction[]
+  bookings      Booking[]
+  
+  @@map("client_profiles")
+}
+
+model ClientInteraction {
+  id          String   @id @default(cuid())
+  clientId    String
+  type        String
+  content     String?
+  sentiment   String?  // positive|neutral|negative
+  value       Float?   // Monetary value if applicable
+  outcome     String?  // "booking|quote|no-action|follow-up"
+  createdAt   DateTime @default(now())
+  
+  client      ClientProfile @relation(fields: [clientId], references: [id])
+  
+  @@map("client_interactions")
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  clientId      String
+  conversationId String?
+  
+  destination   String
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  totalValue    Float
+  status        String
+  
+  // Booking details
+  hotel         String?
+  roomType      String?
+  attractions   String?  // JSON string of array
+  transportation String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  client        ClientProfile @relation(fields: [clientId], references: [id])
+  
+  @@map("bookings")
+}
+
+model MLModel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  version     String
+  type        String
+  accuracy    Float?
+  parameters  String?  // JSON string
+  trainedAt   DateTime
+  isActive    Boolean  @default(true)
+  
+  @@map("ml_models")
+}
+
+model PredictionLog {
+  id          String   @id @default(cuid())
+  modelName   String
+  input       String
+  prediction  String
+  confidence  Float?
+  actual      String?    // For training feedback
+  createdAt   DateTime @default(now())
+  
+  @@map("prediction_logs")
+}
+
+model PurchaseAlert {
+  id                String   @id @default(cuid())
+  conversationId    String
+  clientEmail       String
+  alertType         String   // PURCHASE_READY, HIGH_VALUE, URGENT_RESPONSE
+  priority          String   // LOW, MEDIUM, HIGH, URGENT
+  readinessScore    Float
+  estimatedValue    Float?
+  estimatedCloseTime String?
+  readySignals      String   // JSON array
+  immediateActions  String   // JSON array
+  nextSteps         String?  // JSON array
+  isActive          Boolean  @default(true)
+  isResolved        Boolean  @default(false)
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  conversation      Conversation @relation(fields: [conversationId], references: [id])
+  
+  @@map("purchase_alerts")
+}
+
+model PurchaseReadinessLog {
+  id                String   @id @default(cuid())
+  clientEmail       String
+  readinessScore    Float
+  confidence        Float
+  estimatedValue    Float?
+  estimatedCloseTime String?
+  readySignals      String   // JSON array
+  immediateActions  String   // JSON array
+  reasoning         String?
+  createdAt         DateTime @default(now())
+  
+  @@map("purchase_readiness_logs")
+}
+
+// Enums replaced with String for SQLite compatibility
+// Priority: LOW, MEDIUM, HIGH, URGENT
+// InteractionType: EMAIL, PHONE, WHATSAPP, BOOKING, COMPLAINT, INQUIRY, FOLLOW_UP
+// BookingStatus: INQUIRY, QUOTED, CONFIRMED, PAID, COMPLETED, CANCELLED
+// MLModelType: SENTIMENT_ANALYSIS, PURCHASE_PREDICTION, PRICE_OPTIMIZATION, RECOMMENDATION
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  content        String
+  sender         String
+  timestamp      DateTime @default(now())
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  
+  @@map("messages")
+}
+
+model Hotel {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  location    String
+  priceRange  String
+  rating      Float?
+  amenities   String?  // JSON string of array
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("hotels")
+}
+
+model Attraction {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  location    String
+  category    String
+  priceRange  String
+  hours       String?
+  rating      Float?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("attractions")
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  cuisine     String
+  location    String
+  priceRange  String
+  rating      Float?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("restaurants")
+}
+
+model KnowledgeBase {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String
+  tags        String?  // JSON string of array
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("knowledge_base")
+}
+
+model AgentSettings {
+  id                String   @id @default(cuid())
+  emailAccount      String?
+  agentName         String   @default("Dubai Travel Assistant")
+  responseTemplate  String?
+  autoReply         Boolean  @default(false)
+  maxResponseTime   Int      @default(24) // hours
+  workingHours      String?  // JSON string
+  signature         String?
+  settings          String?  // JSON string with all settings
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("agent_settings")
+}
+
+// Additional enums replaced with String for SQLite compatibility
+// EmailStatus: PENDING, PROCESSING, RESPONDED, FAILED, IGNORED, ESCALATED
+// ConversationStatus: ACTIVE, RESOLVED, ESCALATED, ARCHIVED
+// MessageSender: CLIENT, AGENT, SYSTEM
+// KnowledgeCategory: HOTELS, ATTRACTIONS, RESTAURANTS, TRANSPORT, WEATHER, GENERAL, FAQ 
