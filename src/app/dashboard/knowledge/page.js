@@ -12,11 +12,17 @@ export default function KnowledgeBasePage() {
   const [editingItem, setEditingItem] = useState(null);
 
   const categories = [
+    { value: 'PACKAGES', label: 'Pakiety wycieczek' },
     { value: 'HOTELS', label: 'Hotele' },
     { value: 'ATTRACTIONS', label: 'Atrakcje' },
     { value: 'RESTAURANTS', label: 'Restauracje' },
     { value: 'TRANSPORT', label: 'Transport' },
+    { value: 'ACTIVITIES', label: 'Aktywności' },
+    { value: 'SHOPPING', label: 'Zakupy' },
     { value: 'WEATHER', label: 'Pogoda' },
+    { value: 'PRICES', label: 'Ceny i budżet' },
+    { value: 'VISA', label: 'Wizy i dokumenty' },
+    { value: 'CULTURE', label: 'Kultura i zwyczaje' },
     { value: 'GENERAL', label: 'Ogólne' },
     { value: 'FAQ', label: 'FAQ' }
   ];

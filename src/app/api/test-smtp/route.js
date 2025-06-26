@@ -8,8 +8,8 @@ export async function POST() {
     const testEmail = {
       to: process.env.HUMAN_AGENT_EMAIL || 'marcin@deximlabs.com',
       subject: 'Test SMTP - Dubai Travel Agent',
-      text: 'To jest testowy email z aplikacji Dubai Travel Agent. Jeśli otrzymałeś ten email, konfiguracja SMTP działa poprawnie.',
-      html: '<p>To jest <strong>testowy email</strong> z aplikacji Dubai Travel Agent.</p><p>Jeśli otrzymałeś ten email, konfiguracja SMTP działa poprawnie.</p>'
+      textContent: 'To jest testowy email z aplikacji Dubai Travel Agent. Jeśli otrzymałeś ten email, konfiguracja SMTP działa poprawnie.',
+      htmlContent: '<p>To jest <strong>testowy email</strong> z aplikacji Dubai Travel Agent.</p><p>Jeśli otrzymałeś ten email, konfiguracja SMTP działa poprawnie.</p>'
     }
     
     console.log('📧 Wysyłanie testowego emaila do:', testEmail.to)

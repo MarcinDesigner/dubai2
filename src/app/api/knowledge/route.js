@@ -39,19 +39,22 @@ export async function POST(request) {
   try {
     const { title, content, category, tags } = await request.json();
 
+    console.log('POST /api/knowledge - dane:', { title, content, category, tags });
+
     const knowledge = await prisma.knowledgeBase.create({
       data: {
         title,
         content,
         category,
-        tags: tags || []
+        tags: JSON.stringify(tags || [])
       }
     });
 
     return NextResponse.json(knowledge);
   } catch (error) {
+    console.error('Błąd w POST /api/knowledge:', error);
     return NextResponse.json(
-      { error: 'Błąd dodawania do bazy wiedzy' },
+      { error: 'Błąd dodawania do bazy wiedzy', details: error.message },
       { status: 500 }
     );
   }

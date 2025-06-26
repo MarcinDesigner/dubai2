@@ -123,8 +123,8 @@ export async function POST(request) {
             await sendEmail({
               to: emailData.from,
               subject: `Re: ${emailData.subject}`,
-              text: aiResponse.response,
-              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px;">
+              textContent: aiResponse.response,
+              htmlContent: `<div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px;">
                 ${aiResponse.response.replace(/\n/g, '<br>')}
                 <br><br>
                 <hr style="border: none; border-top: 1px solid #ccc; margin: 20px 0;">

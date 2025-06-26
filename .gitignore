@@ -26,6 +26,8 @@ yarn-error.log*
 # Local env files
 .env
 .env.local
+.env.local.backup
+.env.local.broken
 .env.development.local
 .env.test.local
 .env.production.local
@@ -80,3 +82,4 @@ pids
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test 
+node_modules
