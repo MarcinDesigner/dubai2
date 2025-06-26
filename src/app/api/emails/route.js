@@ -7,7 +7,7 @@ export async function GET(request) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '50');
     const offset = (page - 1) * limit;
 
     // Buduj warunki wyszukiwania
@@ -49,11 +49,11 @@ export async function GET(request) {
 
     // Pobierz statystyki
     const stats = {
-      total: await prisma.email.count({ where }),
-      pending: await prisma.email.count({ where: { ...where, status: 'pending' } }),
-      processed: await prisma.email.count({ where: { ...where, status: 'processed' } }),
-      responded: await prisma.email.count({ where: { ...where, status: 'responded' } }),
-      failed: await prisma.email.count({ where: { ...where, status: 'failed' } })
+      total: await prisma.email.count(),
+      new: await prisma.email.count({ where: { status: 'PENDING' } }),
+      responded: await prisma.email.count({ where: { status: 'RESPONDED' } }),
+      escalated: await prisma.email.count({ where: { status: 'ESCALATED' } }),
+      processing: await prisma.email.count({ where: { status: 'PROCESSING' } })
     };
 
     return NextResponse.json({
@@ -71,7 +71,40 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error fetching emails:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch emails' },
+      { error: 'Błąd pobierania emaili', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - usuwanie wszystkich emaili
+export async function DELETE(request) {
+  try {
+    console.log('🗑️ Rozpoczynam usuwanie wszystkich emaili...');
+
+    // Najpierw usuń wszystkie konwersacje (foreign key constraint)
+    const deletedConversations = await prisma.conversation.deleteMany({});
+    console.log(`🗑️ Usunięto ${deletedConversations.count} konwersacji`);
+
+    // Następnie usuń wszystkie emaile
+    const deletedEmails = await prisma.email.deleteMany({});
+    console.log(`🗑️ Usunięto ${deletedEmails.count} emaili`);
+
+    return NextResponse.json({
+      success: true,
+      message: `Pomyślnie usunięto ${deletedEmails.count} emaili i ${deletedConversations.count} konwersacji`,
+      deletedEmails: deletedEmails.count,
+      deletedConversations: deletedConversations.count
+    });
+
+  } catch (error) {
+    console.error('❌ Błąd usuwania emaili:', error);
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Błąd usuwania emaili', 
+        details: error.message 
+      },
       { status: 500 }
     );
   }

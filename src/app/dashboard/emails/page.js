@@ -30,6 +30,7 @@ export default function EmailsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({});
   const [fetching, setFetching] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchEmails();
@@ -132,6 +133,37 @@ export default function EmailsPage() {
     }
   };
 
+  const deleteAllEmails = async () => {
+    const confirmed = window.confirm(
+      '⚠️ UWAGA!\n\nCzy na pewno chcesz usunąć WSZYSTKIE emaile z bazy danych?\n\nTa operacja jest nieodwracalna i usunie:\n- Wszystkie emaile\n- Wszystkie konwersacje\n- Wszystkie analizy AI\n\nKliknij OK aby kontynuować lub Anuluj aby przerwać.'
+    );
+    
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch('/api/emails', {
+        method: 'DELETE'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Sukces!\n\n${result.message}`);
+        setSelectedEmail(null);
+        setConversation(null);
+        await fetchEmails();
+      } else {
+        alert(`❌ Błąd: ${result.error}\n\n${result.details || ''}`);
+      }
+    } catch (error) {
+      console.error('Error deleting emails:', error);
+      alert(`❌ Błąd połączenia: ${error.message}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -158,17 +190,31 @@ export default function EmailsPage() {
           <p className="text-gray-600 mt-2">Przeglądaj i zarządzaj wszystkimi emailami klientów</p>
         </div>
         
-        <button
-          onClick={fetchEmailsFromServer}
-          disabled={fetching}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            fetching 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {fetching ? '🔄 Pobieranie...' : '📧 Pobierz nowe emaile'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={deleteAllEmails}
+            disabled={deleting}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              deleting 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-red-600 hover:bg-red-700 text-white'
+            }`}
+          >
+            {deleting ? '🗑️ Usuwanie...' : '🗑️ Usuń wszystkie emaile'}
+          </button>
+          
+          <button
+            onClick={fetchEmailsFromServer}
+            disabled={fetching}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              fetching 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            {fetching ? '🔄 Pobieranie...' : '📧 Pobierz nowe emaile'}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
