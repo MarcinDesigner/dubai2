@@ -3,60 +3,43 @@ import { getProviderStatus } from '@/lib/ai';
 
 export async function GET() {
   try {
-    console.log('🔍 Sprawdzanie statusu providerów AI...');
-    
     const status = getProviderStatus();
     
-    // Additional checks
-    const envStatus = {
-      OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 
-        `Skonfigurowany (${process.env.OPENAI_API_KEY.substring(0, 10)}...)` : 
-        'Brak',
+    const apiStatus = {
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? 
         `Skonfigurowany (${process.env.ANTHROPIC_API_KEY.substring(0, 10)}...)` : 
-        'Brak',
-      AI_PROVIDER: process.env.AI_PROVIDER || 'auto'
+        'Nie skonfigurowany',
+      AI_PROVIDER: process.env.AI_PROVIDER || 'claude (default)'
     };
 
+    // Recommendations based on configuration
     const recommendations = [];
     
-    if (!status.hasOpenAI && !status.hasClaude) {
-      recommendations.push('⚠️ Brak konfiguracji API - używany będzie tylko fallback');
-    }
-    
-    if (status.hasOpenAI && !status.hasClaude) {
-      recommendations.push('💡 Rozważ dodanie ANTHROPIC_API_KEY dla większej niezawodności');
-    }
-    
-    if (!status.hasOpenAI && status.hasClaude) {
-      recommendations.push('💡 Rozważ dodanie OPENAI_API_KEY dla większej funkcjonalności');
-    }
-    
-    if (status.hasOpenAI && status.hasClaude) {
-      recommendations.push('✅ Masz oba providery - system automatycznie wybierze najlepszy');
+    if (!status.hasClaude) {
+      recommendations.push('⚠️ Brak ANTHROPIC_API_KEY - aplikacja będzie używać fallback responses');
     }
 
+    if (status.hasClaude) {
+      recommendations.push('✅ Claude API skonfigurowane poprawnie');
+    }
+
+    const testEndpoints = {
+      claude: '/api/test-claude'
+    };
+
     return NextResponse.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      status,
-      environment: envStatus,
+      status: 'success',
+      provider: status,
+      apiKeys: apiStatus,
       recommendations,
-      availableEndpoints: {
-        openai: '/api/test-openai',
-        claude: '/api/test-claude',
-        fallback: '/api/test-ai-response',
-        mixed: '/api/email/fetch'
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Błąd sprawdzania statusu:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: error.message,
+      testEndpoints,
       timestamp: new Date().toISOString()
-    }, { status: 500 });
+    });
+  } catch (error) {
+    console.error('Error checking AI status:', error);
+    return NextResponse.json(
+      { error: 'Błąd sprawdzania statusu AI', details: error.message },
+      { status: 500 }
+    );
   }
 } 

@@ -4,10 +4,26 @@
 # Database
 DATABASE_URL="file:./dev.db"
 
-# AI Providers
-OPENAI_API_KEY="your-openai-api-key"
+# Claude AI
 ANTHROPIC_API_KEY="your-claude-api-key"
-AI_PROVIDER="auto"  # Options: "openai", "claude", "auto", "fallback"
+
+# AI Provider Configuration
+AI_PROVIDER="claude"  # Options: "claude", "fallback"
+
+# Email Configuration
+IMAP_HOST="your-imap-host"
+IMAP_PORT=993
+IMAP_USER="your-email@domain.com"
+IMAP_PASS="your-email-password"
+
+# SMTP Configuration
+SMTP_HOST="your-smtp-host"
+SMTP_PORT=587
+SMTP_USER="your-email@domain.com"
+SMTP_PASS="your-email-password"
+
+# Application
+NEXT_PUBLIC_APP_URL="http://localhost:3003"
 
 # Email Settings - SMTP (wysyłanie)
 SMTP_HOST="smtp.zenbox.pl"

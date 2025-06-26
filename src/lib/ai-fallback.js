@@ -1,4 +1,4 @@
-// Fallback AI system - symuluje odpowiedzi bez OpenAI API
+// Fallback AI system - symuluje odpowiedzi bez zewnętrznych API
 
 export function detectLanguageFallback(text) {
   // Prosta detekcja języka na podstawie słów kluczowych
