@@ -64,21 +64,25 @@ export async function PUT(request) {
   try {
     const { id, title, content, category, tags, isActive } = await request.json();
 
+    console.log('PUT /api/knowledge - dane:', { id, title, content, category, tags, isActive });
+
     const knowledge = await prisma.knowledgeBase.update({
       where: { id },
       data: {
         title,
         content,
         category,
-        tags: tags || [],
+        tags: JSON.stringify(tags || []),
         isActive: isActive ?? true
       }
     });
 
+    console.log('PUT /api/knowledge - zaktualizowano:', knowledge);
     return NextResponse.json(knowledge);
   } catch (error) {
+    console.error('Błąd w PUT /api/knowledge:', error);
     return NextResponse.json(
-      { error: 'Błąd aktualizacji bazy wiedzy' },
+      { error: 'Błąd aktualizacji bazy wiedzy', details: error.message },
       { status: 500 }
     );
   }

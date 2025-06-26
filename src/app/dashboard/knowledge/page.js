@@ -72,8 +72,13 @@ export default function KnowledgeBasePage() {
 
   const handleSave = async (formData) => {
     try {
+      console.log('handleSave wywołane z danymi:', formData);
+      console.log('editingItem:', editingItem);
+      
       const method = editingItem ? 'PUT' : 'POST';
       const body = editingItem ? { ...formData, id: editingItem.id } : formData;
+
+      console.log('Wysyłam request:', { method, body });
 
       const response = await fetch('/api/knowledge', {
         method,
@@ -81,13 +86,22 @@ export default function KnowledgeBasePage() {
         body: JSON.stringify(body)
       });
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
+        const result = await response.json();
+        console.log('Response data:', result);
         fetchKnowledge();
         setShowAddForm(false);
         setEditingItem(null);
+      } else {
+        const error = await response.text();
+        console.error('Response error:', error);
+        alert('Błąd zapisywania: ' + error);
       }
     } catch (error) {
       console.error('Error saving knowledge:', error);
+      alert('Błąd zapisywania: ' + error.message);
     }
   };
 
@@ -250,10 +264,15 @@ function KnowledgeForm({ item, categories, onSave, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
+    console.log('handleSubmit - formData przed przetworzeniem:', formData);
+    
+    const processedData = {
       ...formData,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-    });
+    };
+    
+    console.log('handleSubmit - dane po przetworzeniu:', processedData);
+    onSave(processedData);
   };
 
   return (
