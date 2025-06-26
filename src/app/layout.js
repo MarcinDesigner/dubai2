@@ -30,12 +30,6 @@ export default function RootLayout({ children }) {
                       Dashboard
                     </a>
                     <a
-                      href="/dashboard/purchase-alerts"
-                      className="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium font-bold"
-                    >
-                      🎯 Alerty Zakupowe
-                    </a>
-                    <a
                       href="/dashboard/emails"
                       className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                     >

@@ -5,7 +5,6 @@ import {
   Settings, 
   Mail, 
   Bot, 
-  Target, 
   Database, 
   Globe, 
   Bell,
@@ -16,24 +15,19 @@ import {
   Save,
   AlertTriangle,
   CheckCircle,
-  Clock,
-  DollarSign,
-  Phone,
-  Slack
+  Clock
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
     // AI Configuration
     ai: {
-      model: 'gpt-4-turbo-preview',
+      provider: 'claude',
       temperature: 0.7,
       maxTokens: 2000,
       timeout: 30000,
       fallbackEnabled: true,
-      languageDetection: true,
-      sentimentAnalysis: true,
-      purchasePrediction: true
+      languageDetection: true
     },
     
     // Email Processing
@@ -41,33 +35,15 @@ export default function SettingsPage() {
       autoReply: true,
       processingDelay: 0,
       maxEmailsPerHour: 100,
-      escalationThreshold: 0.8,
       responseTemplate: 'professional',
       signatureEnabled: true,
       signature: 'Dubai Travel Agent\nYour Dream Dubai Experience Awaits!'
     },
     
-    // Purchase Alerts
-    purchaseAlerts: {
-      enabled: true,
-      readinessThreshold: 0.8,
-      highValueThreshold: 10000,
-      urgentResponseTime: 2,
-      emailNotifications: true,
-      slackNotifications: false,
-      smsNotifications: false,
-      salesTeamEmail: 'sales@dubaitravel.com'
-    },
-    
     // Notifications
     notifications: {
       escalationEmail: 'agent@dubaitravel.com',
-      slackWebhookUrl: '',
-      smsApiKey: '',
-      smsPhoneNumber: '',
-      emailEnabled: true,
-      slackEnabled: false,
-      smsEnabled: false
+      emailEnabled: true
     },
     
     // Language Support
@@ -150,7 +126,6 @@ export default function SettingsPage() {
   const tabs = [
     { id: 'ai', label: 'AI Configuration', icon: Brain },
     { id: 'email', label: 'Email Processing', icon: Mail },
-    { id: 'alerts', label: 'Purchase Alerts', icon: Target },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'languages', label: 'Languages', icon: Globe },
     { id: 'knowledge', label: 'Knowledge Base', icon: Database },
@@ -221,22 +196,24 @@ export default function SettingsPage() {
                   AI Configuration
                 </CardTitle>
                 <CardDescription>
-                  Configure AI model settings and behavior
+                  Configure Claude AI settings and behavior
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">AI Model</label>
+                    <label className="block text-sm font-medium mb-2">AI Provider</label>
                     <select
-                      value={settings.ai.model}
-                      onChange={(e) => updateSetting('ai', 'model', e.target.value)}
+                      value={settings.ai.provider}
+                      onChange={(e) => updateSetting('ai', 'provider', e.target.value)}
                       className="w-full p-2 border rounded-lg"
                     >
-                      <option value="gpt-4-turbo-preview">GPT-4 Turbo (Recommended)</option>
-                      <option value="gpt-4">GPT-4</option>
-                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      <option value="claude">Claude AI (Anthropic) - Recommended</option>
+                      <option value="fallback">Fallback Responses</option>
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Claude provides intelligent, context-aware responses
+                    </p>
                   </div>
                   
                   <div>
@@ -264,7 +241,12 @@ export default function SettingsPage() {
                       value={settings.ai.maxTokens}
                       onChange={(e) => updateSetting('ai', 'maxTokens', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="100"
+                      max="4000"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Maximum length of AI responses (100-4000)
+                    </p>
                   </div>
                   
                   <div>
@@ -274,7 +256,12 @@ export default function SettingsPage() {
                       value={settings.ai.timeout}
                       onChange={(e) => updateSetting('ai', 'timeout', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="5000"
+                      max="60000"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Request timeout (5000-60000ms)
+                    </p>
                   </div>
                 </div>
 
@@ -287,6 +274,9 @@ export default function SettingsPage() {
                       className="rounded"
                     />
                     <span className="text-sm font-medium">Enable Fallback Responses</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Use simple responses if Claude is unavailable
+                    </span>
                   </label>
                   
                   <label className="flex items-center gap-2">
@@ -296,28 +286,21 @@ export default function SettingsPage() {
                       onChange={(e) => updateSetting('ai', 'languageDetection', e.target.checked)}
                       className="rounded"
                     />
-                    <span className="text-sm font-medium">Language Detection</span>
+                    <span className="text-sm font-medium">Automatic Language Detection</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Detect and respond in customer's language
+                    </span>
                   </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.ai.sentimentAnalysis}
-                      onChange={(e) => updateSetting('ai', 'sentimentAnalysis', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Sentiment Analysis</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.ai.purchasePrediction}
-                      onChange={(e) => updateSetting('ai', 'purchasePrediction', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Purchase Prediction</span>
-                  </label>
+                </div>
+
+                {/* Claude API Status */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Claude AI Status</h4>
+                  <p className="text-sm text-blue-700">
+                    Make sure to set your ANTHROPIC_API_KEY in the environment variables.
+                    <br />
+                    Current provider: <strong>{settings.ai.provider}</strong>
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -344,6 +327,9 @@ export default function SettingsPage() {
                       className="rounded"
                     />
                     <span className="text-sm font-medium">Enable Auto-Reply</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Automatically send responses to customer emails
+                    </span>
                   </label>
                   
                   <label className="flex items-center gap-2">
@@ -354,6 +340,9 @@ export default function SettingsPage() {
                       className="rounded"
                     />
                     <span className="text-sm font-medium">Include Email Signature</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Add signature to all outgoing emails
+                    </span>
                   </label>
                 </div>
 
@@ -365,7 +354,12 @@ export default function SettingsPage() {
                       value={settings.email.processingDelay}
                       onChange={(e) => updateSetting('email', 'processingDelay', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="0"
+                      max="300"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Delay before processing emails (0-300 seconds)
+                    </p>
                   </div>
                   
                   <div>
@@ -375,7 +369,12 @@ export default function SettingsPage() {
                       value={settings.email.maxEmailsPerHour}
                       onChange={(e) => updateSetting('email', 'maxEmailsPerHour', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="1"
+                      max="1000"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Rate limit for email processing
+                    </p>
                   </div>
                 </div>
 
@@ -391,6 +390,9 @@ export default function SettingsPage() {
                     <option value="concise">Concise</option>
                     <option value="detailed">Detailed</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Style of AI-generated responses
+                  </p>
                 </div>
 
                 <div>
@@ -401,129 +403,9 @@ export default function SettingsPage() {
                     className="w-full p-2 border rounded-lg h-24"
                     placeholder="Your email signature..."
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Escalation Threshold</label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={settings.email.escalationThreshold}
-                    onChange={(e) => updateSetting('email', 'escalationThreshold', parseFloat(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-gray-500 mt-1">
-                    Current: {settings.email.escalationThreshold} (0 = Never escalate, 1 = Always escalate)
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeTab === 'alerts' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Purchase Alerts
-                </CardTitle>
-                <CardDescription>
-                  Configure purchase readiness detection and alerts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.purchaseAlerts.enabled}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'enabled', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Enable Purchase Alerts</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.purchaseAlerts.emailNotifications}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'emailNotifications', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Email Notifications</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.purchaseAlerts.slackNotifications}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'slackNotifications', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Slack Notifications</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.purchaseAlerts.smsNotifications}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'smsNotifications', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">SMS Notifications</span>
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Readiness Threshold</label>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="1"
-                      step="0.05"
-                      value={settings.purchaseAlerts.readinessThreshold}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'readinessThreshold', parseFloat(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-sm text-gray-500 mt-1">
-                      {Math.round(settings.purchaseAlerts.readinessThreshold * 100)}% confidence required
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">High Value Threshold (AED)</label>
-                    <input
-                      type="number"
-                      value={settings.purchaseAlerts.highValueThreshold}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'highValueThreshold', parseInt(e.target.value))}
-                      className="w-full p-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Urgent Response Time (hours)</label>
-                    <input
-                      type="number"
-                      value={settings.purchaseAlerts.urgentResponseTime}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'urgentResponseTime', parseInt(e.target.value))}
-                      className="w-full p-2 border rounded-lg"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Sales Team Email</label>
-                    <input
-                      type="email"
-                      value={settings.purchaseAlerts.salesTeamEmail}
-                      onChange={(e) => updateSetting('purchaseAlerts', 'salesTeamEmail', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
-                    />
-                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Signature added to all outgoing emails
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -537,7 +419,7 @@ export default function SettingsPage() {
                   Notifications
                 </CardTitle>
                 <CardDescription>
-                  Configure notification channels and settings
+                  Configure notification settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -550,41 +432,9 @@ export default function SettingsPage() {
                     className="w-full p-2 border rounded-lg"
                     placeholder="agent@dubaitravel.com"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Slack Webhook URL</label>
-                  <input
-                    type="url"
-                    value={settings.notifications.slackWebhookUrl}
-                    onChange={(e) => updateSetting('notifications', 'slackWebhookUrl', e.target.value)}
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="https://hooks.slack.com/services/..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">SMS API Key</label>
-                    <input
-                      type="password"
-                      value={settings.notifications.smsApiKey}
-                      onChange={(e) => updateSetting('notifications', 'smsApiKey', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
-                      placeholder="Your SMS API key"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">SMS Phone Number</label>
-                    <input
-                      type="tel"
-                      value={settings.notifications.smsPhoneNumber}
-                      onChange={(e) => updateSetting('notifications', 'smsPhoneNumber', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
-                      placeholder="+48123456789"
-                    />
-                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Email address for important notifications
+                  </p>
                 </div>
 
                 <div className="space-y-3">
@@ -596,26 +446,9 @@ export default function SettingsPage() {
                       className="rounded"
                     />
                     <span className="text-sm font-medium">Email Notifications</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.notifications.slackEnabled}
-                      onChange={(e) => updateSetting('notifications', 'slackEnabled', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Slack Notifications</span>
-                  </label>
-                  
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={settings.notifications.smsEnabled}
-                      onChange={(e) => updateSetting('notifications', 'smsEnabled', e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">SMS Notifications</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Receive email alerts for important events
+                    </span>
                   </label>
                 </div>
               </CardContent>
@@ -630,43 +463,44 @@ export default function SettingsPage() {
                   Language Support
                 </CardTitle>
                 <CardDescription>
-                  Configure supported languages and detection settings
+                  Configure multi-language support settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Default Language</label>
-                    <select
-                      value={settings.languages.defaultLanguage}
-                      onChange={(e) => updateSetting('languages', 'defaultLanguage', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
-                    >
-                      <option value="pl">Polish</option>
-                      <option value="en">English</option>
-                      <option value="fr">French</option>
-                      <option value="de">German</option>
-                      <option value="es">Spanish</option>
-                      <option value="it">Italian</option>
-                      <option value="ru">Russian</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Fallback Language</label>
-                    <select
-                      value={settings.languages.fallbackLanguage}
-                      onChange={(e) => updateSetting('languages', 'fallbackLanguage', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
-                    >
-                      <option value="en">English</option>
-                      <option value="pl">Polish</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Default Language</label>
+                  <select
+                    value={settings.languages.defaultLanguage}
+                    onChange={(e) => updateSetting('languages', 'defaultLanguage', e.target.value)}
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="pl">Polish</option>
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="es">Spanish</option>
+                    <option value="it">Italian</option>
+                    <option value="ru">Russian</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 mb-3">
+                  <label className="block text-sm font-medium mb-2">Fallback Language</label>
+                  <select
+                    value={settings.languages.fallbackLanguage}
+                    onChange={(e) => updateSetting('languages', 'fallbackLanguage', e.target.value)}
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="en">English</option>
+                    <option value="pl">Polish</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Language used when detection fails
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={settings.languages.autoDetection}
@@ -674,12 +508,15 @@ export default function SettingsPage() {
                       className="rounded"
                     />
                     <span className="text-sm font-medium">Auto-detect Language</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Automatically detect customer's language
+                    </span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Supported Languages</label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <label className="block text-sm font-medium mb-2">Supported Languages</label>
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { code: 'pl', name: 'Polish' },
                       { code: 'en', name: 'English' },
@@ -718,7 +555,7 @@ export default function SettingsPage() {
                   Knowledge Base
                 </CardTitle>
                 <CardDescription>
-                  Configure knowledge base search and management
+                  Configure knowledge base settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -762,6 +599,8 @@ export default function SettingsPage() {
                       value={settings.knowledgeBase.maxResults}
                       onChange={(e) => updateSetting('knowledgeBase', 'maxResults', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="1"
+                      max="50"
                     />
                   </div>
                   
@@ -769,7 +608,7 @@ export default function SettingsPage() {
                     <label className="block text-sm font-medium mb-2">Relevance Threshold</label>
                     <input
                       type="range"
-                      min="0"
+                      min="0.1"
                       max="1"
                       step="0.1"
                       value={settings.knowledgeBase.relevanceThreshold}
@@ -777,7 +616,7 @@ export default function SettingsPage() {
                       className="w-full"
                     />
                     <div className="text-sm text-gray-500 mt-1">
-                      Current: {settings.knowledgeBase.relevanceThreshold}
+                      {settings.knowledgeBase.relevanceThreshold}
                     </div>
                   </div>
                 </div>
@@ -790,10 +629,10 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="w-5 h-5" />
-                  Performance
+                  Performance Settings
                 </CardTitle>
                 <CardDescription>
-                  Configure caching, rate limiting, and performance settings
+                  Configure performance and caching settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -819,7 +658,7 @@ export default function SettingsPage() {
                   </label>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Cache TTL (seconds)</label>
                     <input
@@ -827,6 +666,8 @@ export default function SettingsPage() {
                       value={settings.performance.cacheTTL}
                       onChange={(e) => updateSetting('performance', 'cacheTTL', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="60"
+                      max="86400"
                     />
                   </div>
                   
@@ -837,18 +678,22 @@ export default function SettingsPage() {
                       value={settings.performance.maxRequestsPerMinute}
                       onChange={(e) => updateSetting('performance', 'maxRequestsPerMinute', parseInt(e.target.value))}
                       className="w-full p-2 border rounded-lg"
+                      min="1"
+                      max="1000"
                     />
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Timeout (seconds)</label>
-                    <input
-                      type="number"
-                      value={settings.performance.timeoutSeconds}
-                      onChange={(e) => updateSetting('performance', 'timeoutSeconds', parseInt(e.target.value))}
-                      className="w-full p-2 border rounded-lg"
-                    />
-                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Timeout (seconds)</label>
+                  <input
+                    type="number"
+                    value={settings.performance.timeoutSeconds}
+                    onChange={(e) => updateSetting('performance', 'timeoutSeconds', parseInt(e.target.value))}
+                    className="w-full p-2 border rounded-lg"
+                    min="5"
+                    max="300"
+                  />
                 </div>
               </CardContent>
             </Card>

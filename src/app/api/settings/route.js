@@ -9,45 +9,26 @@ export async function GET(request) {
     // Default settings structure
     const defaultSettings = {
       ai: {
-        model: 'gpt-4-turbo-preview',
+        provider: 'claude',
         temperature: 0.7,
         maxTokens: 2000,
         timeout: 30000,
         fallbackEnabled: true,
-        languageDetection: true,
-        sentimentAnalysis: true,
-        purchasePrediction: true
+        languageDetection: true
       },
       
       email: {
         autoReply: true,
         processingDelay: 0,
         maxEmailsPerHour: 100,
-        escalationThreshold: 0.8,
         responseTemplate: 'professional',
         signatureEnabled: true,
         signature: 'Dubai Travel Agent\nYour Dream Dubai Experience Awaits!'
       },
       
-      purchaseAlerts: {
-        enabled: true,
-        readinessThreshold: 0.8,
-        highValueThreshold: 10000,
-        urgentResponseTime: 2,
-        emailNotifications: true,
-        slackNotifications: false,
-        smsNotifications: false,
-        salesTeamEmail: 'sales@dubaitravel.com'
-      },
-      
       notifications: {
         escalationEmail: 'agent@dubaitravel.com',
-        slackWebhookUrl: '',
-        smsApiKey: '',
-        smsPhoneNumber: '',
-        emailEnabled: true,
-        slackEnabled: false,
-        smsEnabled: false
+        emailEnabled: true
       },
       
       languages: {
@@ -111,7 +92,7 @@ export async function POST(request) {
     const settings = await request.json();
     
     // Validate settings structure
-    const requiredSections = ['ai', 'email', 'purchaseAlerts', 'notifications', 'languages', 'knowledgeBase', 'performance'];
+    const requiredSections = ['ai', 'email', 'notifications', 'languages', 'knowledgeBase', 'performance'];
     for (const section of requiredSections) {
       if (!settings[section]) {
         return NextResponse.json(
@@ -153,31 +134,10 @@ export async function POST(request) {
     if (settings.notifications.escalationEmail) {
       process.env.HUMAN_AGENT_EMAIL = settings.notifications.escalationEmail;
     }
-    if (settings.purchaseAlerts.salesTeamEmail) {
-      process.env.SALES_TEAM_EMAIL = settings.purchaseAlerts.salesTeamEmail;
-    }
-    if (settings.notifications.slackWebhookUrl) {
-      process.env.SLACK_WEBHOOK_URL = settings.notifications.slackWebhookUrl;
-    }
-    if (settings.notifications.smsApiKey) {
-      process.env.SMS_API_KEY = settings.notifications.smsApiKey;
-    }
-    if (settings.notifications.smsPhoneNumber) {
-      process.env.SMS_PHONE_NUMBER = settings.notifications.smsPhoneNumber;
-    }
-    if (settings.purchaseAlerts?.readinessThreshold !== undefined) {
-      process.env.PURCHASE_READINESS_THRESHOLD = settings.purchaseAlerts.readinessThreshold.toString();
-    }
-    if (settings.purchaseAlerts?.highValueThreshold !== undefined) {
-      process.env.HIGH_VALUE_THRESHOLD = settings.purchaseAlerts.highValueThreshold.toString();
-    }
     
-    // Set boolean flags
-    if (settings.notifications?.smsEnabled !== undefined) {
-      process.env.SMS_ENABLED = settings.notifications.smsEnabled.toString();
-    }
-    if (settings.notifications?.slackEnabled !== undefined) {
-      process.env.SLACK_ENABLED = settings.notifications.slackEnabled.toString();
+    // Set AI provider
+    if (settings.ai.provider) {
+      process.env.AI_PROVIDER = settings.ai.provider;
     }
 
     return NextResponse.json({ 

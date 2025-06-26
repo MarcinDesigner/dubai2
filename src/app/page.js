@@ -21,84 +21,96 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                📧 Zarządzanie Emailami
+                📧 Email Management
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Automatyczne pobieranie, kategoryzacja i odpowiadanie na emaile klientów 
-                z wykorzystaniem AI Claude.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Automatyczne pobieranie i przetwarzanie emaili klientów z inteligentną kategoryzacją.
+              </p>
+              <Link href="/dashboard/emails" className="text-blue-600 hover:text-blue-800 font-medium">
+                Zarządzaj emailami →
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                🤖 Inteligentne Odpowiedzi
+                🤖 Claude AI Responses
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                AI Claude generuje spersonalizowane odpowiedzi w różnych językach, 
-                dostosowane do potrzeb klienta.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Inteligentne odpowiedzi AI w 7+ językach z wykorzystaniem bazy wiedzy o Dubaju.
+              </p>
+              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+                Zobacz dashboard →
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                📊 Analiza Klientów
+                📚 Knowledge Base
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Zaawansowana analiza sentymentu, prawdopodobieństwa zakupu 
-                i profilowania klientów.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Kompletna baza wiedzy o Dubaju: hotele, atrakcje, transport, praktyczne informacje.
+              </p>
+              <Link href="/dashboard/knowledge" className="text-blue-600 hover:text-blue-800 font-medium">
+                Zarządzaj bazą wiedzy →
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                🧠 Baza Wiedzy
+                📊 Analytics & Insights
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Zarządzanie informacjami o hotelach, atrakcjach i ofercie 
-                dla lepszych odpowiedzi AI.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Szczegółowe statystyki, analiza sentymentu i insights o zachowaniach klientów.
+              </p>
+              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+                Zobacz statystyki →
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                🚨 Alerty Zakupowe
+                🌍 Multi-language Support
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Automatyczne powiadomienia o potencjalnych klientach 
-                z wysoką prawdopodobieństwem zakupu.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Obsługa 7 języków z automatycznym wykrywaniem i dostosowaniem odpowiedzi.
+              </p>
+              <Link href="/dashboard/settings" className="text-blue-600 hover:text-blue-800 font-medium">
+                Konfiguruj języki →
+              </Link>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                ⚙️ Konfiguracja
+                ⚙️ Settings & Configuration
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Elastyczne ustawienia AI, szablonów odpowiedzi 
-                i parametrów systemu.
-              </CardDescription>
+              <p className="text-gray-600 mb-4">
+                Pełna konfiguracja Claude AI, email processing i wszystkich funkcji systemu.
+              </p>
+              <Link href="/dashboard/settings" className="text-blue-600 hover:text-blue-800 font-medium">
+                Otwórz ustawienia →
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -106,67 +118,61 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            🚀 Panel Zarządzania
+            🚀 Quick Actions
           </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link href="/dashboard" className="block">
-              <div className="bg-blue-50 hover:bg-blue-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-blue-200">
-                <div className="text-3xl mb-2">📊</div>
-                <h3 className="font-semibold text-gray-900">Dashboard</h3>
-                <p className="text-sm text-gray-600">Przegląd statystyk i aktywności</p>
-              </div>
-            </Link>
-
+          <div className="grid md:grid-cols-3 gap-4">
             <Link href="/dashboard/emails" className="block">
-              <div className="bg-green-50 hover:bg-green-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-green-200">
-                <div className="text-3xl mb-2">📧</div>
-                <h3 className="font-semibold text-gray-900">Emaile</h3>
-                <p className="text-sm text-gray-600">Zarządzanie emailami klientów</p>
+              <div className="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors">
+                <div className="text-2xl mb-2">📧</div>
+                <div className="font-medium text-blue-900">Check Emails</div>
+                <div className="text-sm text-blue-700">View recent emails</div>
               </div>
             </Link>
 
             <Link href="/dashboard/knowledge" className="block">
-              <div className="bg-purple-50 hover:bg-purple-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-purple-200">
-                <div className="text-3xl mb-2">🧠</div>
-                <h3 className="font-semibold text-gray-900">Baza Wiedzy</h3>
-                <p className="text-sm text-gray-600">Zarządzanie informacjami</p>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/purchase-alerts" className="block">
-              <div className="bg-orange-50 hover:bg-orange-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-orange-200">
-                <div className="text-3xl mb-2">🚨</div>
-                <h3 className="font-semibold text-gray-900">Alerty</h3>
-                <p className="text-sm text-gray-600">Powiadomienia o zakupach</p>
+              <div className="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors">
+                <div className="text-2xl mb-2">📚</div>
+                <div className="font-medium text-green-900">Manage Knowledge</div>
+                <div className="text-sm text-green-700">Update information</div>
               </div>
             </Link>
 
             <Link href="/dashboard/settings" className="block">
-              <div className="bg-gray-50 hover:bg-gray-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-gray-200">
-                <div className="text-3xl mb-2">⚙️</div>
-                <h3 className="font-semibold text-gray-900">Ustawienia</h3>
-                <p className="text-sm text-gray-600">Konfiguracja systemu</p>
-              </div>
-            </Link>
-
-            <Link href="/api/ai-status" className="block">
-              <div className="bg-indigo-50 hover:bg-indigo-100 rounded-lg p-6 text-center transition-colors border-2 border-transparent hover:border-indigo-200">
-                <div className="text-3xl mb-2">🔍</div>
-                <h3 className="font-semibold text-gray-900">Status AI</h3>
-                <p className="text-sm text-gray-600">Sprawdź konfigurację</p>
+              <div className="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors">
+                <div className="text-2xl mb-2">⚙️</div>
+                <div className="font-medium text-purple-900">Configure System</div>
+                <div className="text-sm text-purple-700">Adjust settings</div>
               </div>
             </Link>
           </div>
         </div>
 
+        {/* Status Section */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            🔧 System Status
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="text-center">
+              <div className="text-3xl mb-2">🤖</div>
+              <div className="font-medium text-gray-900">Claude AI</div>
+              <div className="text-sm text-gray-600">Intelligent response generation</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl mb-2">📊</div>
+              <div className="font-medium text-gray-900">Analytics</div>
+              <div className="text-sm text-gray-600">Real-time insights & reporting</div>
+            </div>
+          </div>
+        </div>
+
         {/* Footer */}
-        <div className="text-center text-gray-500">
+        <div className="text-center mt-12 text-gray-600">
           <p className="mb-2">
-            **Powered by Claude AI, Next.js, and ❤️**
+            <strong>Dubai Travel AI Agent</strong> - Powered by Claude AI & Next.js
           </p>
           <p className="text-sm">
-            Wersja 2.0 - Profesjonalny system zarządzania emailami dla biur podróży
+            Your intelligent assistant for Dubai travel customer service
           </p>
         </div>
       </div>
