@@ -114,6 +114,40 @@
   }
   
   .compact-content {
-    @apply text-sm text-gray-700 whitespace-pre-wrap bg-white p-2 rounded border;
+    @apply text-sm text-gray-700 bg-white p-2 rounded border;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    overflow: hidden;
+    hyphens: auto;
+    line-height: 1.5;
+  }
+  
+  /* Specjalne style dla długich URL-i i adresów email */
+  .compact-content a,
+  .compact-content [href] {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  
+  /* Dodatkowe style dla kontenerów z długimi tekstami */
+  .email-content-container {
+    max-width: 100%;
+    overflow-x: auto;
+    word-wrap: break-word;
+    word-break: break-word;
+    /* Zapobieganie wychodzeniu poza kontener */
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Specjalne style dla bardzo długich słów lub identyfikatorów */
+  .compact-content code,
+  .compact-content pre {
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 } 

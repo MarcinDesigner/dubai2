@@ -175,6 +175,92 @@ System generuje szczegółowe logi dla:
 - Współczynnik konwersji
 - Zadowolenie klientów
 
+## 🚀 **PRZYSZŁOŚĆ: SaaS Multi-Domain Platform**
+
+### 🎯 **Wizja Rozwoju - Wielodomenowa Platforma AI**
+
+Aplikacja została zaprojektowana z myślą o łatwej transformacji w **SaaS dla różnych branż**. Obecna architektura obsługuje:
+
+#### ✅ **Co już działa (gotowe do SaaS):**
+- 🧠 **System uczenia AI** - uniwersalny dla każdej branży
+- 📚 **Baza wiedzy** - elastyczna struktura kategorii
+- 🔄 **Learning Queue** - automatyczne dodawanie nowych odpowiedzi
+- 🎯 **Claude AI** - trenowalny na dowolnej domenie
+- 📊 **Analytics** - system statystyk i raportowania
+
+#### 🔧 **Wymagane zmiany na SaaS:**
+
+**1. Multi-tenancy (Wielodostępność)**
+```sql
+-- Dodać do każdej tabeli
+ALTER TABLE knowledge_base ADD COLUMN tenant_id STRING;
+ALTER TABLE learning_queue ADD COLUMN tenant_id STRING;
+ALTER TABLE emails ADD COLUMN tenant_id STRING;
+```
+
+**2. Konfiguracja domeny klienta**
+```javascript
+// Nowa tabela: tenant_config
+{
+  id: "tenant_123",
+  name: "Restauracja Mario",
+  domain: "restauracja", // zamiast "dubai-travel"
+  industry: "gastronomy",
+  ai_persona: "Jesteś ekspertem kulinarnym...",
+  knowledge_categories: ["menu", "rezerwacje", "alergeny"],
+  response_style: "friendly_chef"
+}
+```
+
+**3. Dynamiczne prompty AI**
+```javascript
+// Zamiast hardcoded "Dubai Travel Expert"
+const getAIPersona = (tenantConfig) => {
+  return tenantConfig.ai_persona || "Jesteś profesjonalnym asystentem";
+}
+```
+
+#### 💡 **Przykłady innych branż:**
+
+**Restauracja:**
+```javascript
+ai_persona: "Jesteś ekspertem kulinarnym restauracji Mario. Znasz menu, składniki, alergeny."
+categories: ["menu", "rezerwacje", "alergeny", "godziny"]
+```
+
+**Sklep odzieżowy:**
+```javascript
+ai_persona: "Jesteś stylistą i doradcą mody. Pomagasz w wyborze ubrań."
+categories: ["rozmiary", "style", "pielęgnacja", "zwroty"]
+```
+
+**Usługi prawne:**
+```javascript
+ai_persona: "Jesteś asystentem prawnym. Udzielasz podstawowych informacji prawnych."
+categories: ["prawo_cywilne", "umowy", "procedury", "terminy"]
+```
+
+#### ⚡ **Implementacja SaaS (1-2 tygodnie):**
+1. **Dodać `tenant_id` do bazy** (1 dzień)
+2. **Panel konfiguracji klienta** (3 dni)
+3. **Dynamiczne prompty AI** (2 dni)
+4. **System onboardingu** (3 dni)
+5. **Testy i deploy** (2 dni)
+
+#### 🎉 **Rezultat SaaS:**
+**Jeden kod → Nieskończenie wiele branż!**
+
+Każdy klient otrzymuje:
+- ✅ Własną bazę wiedzy
+- ✅ Własnego AI asystenta
+- ✅ Własne kategorie i style
+- ✅ Izolowane dane
+- ✅ Własny learning queue
+
+**Kod nie wymaga przeprogramowania - tylko rozszerzenia o multi-tenancy!** 🚀
+
+---
+
 ## 🔧 Rozwój
 
 ### Struktura projektu

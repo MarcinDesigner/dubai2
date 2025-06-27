@@ -18,7 +18,11 @@ import {
   TrendingUp,
   Heart,
   Meh,
-  Frown
+  Frown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 
 export default function EmailsPage() {
@@ -31,9 +35,23 @@ export default function EmailsPage() {
   const [stats, setStats] = useState({});
   const [fetching, setFetching] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0
+  });
 
   useEffect(() => {
     fetchEmails();
+  }, [filter, searchTerm, pagination.page]);
+
+  // Reset paginacji przy zmianie filtrów
+  useEffect(() => {
+    setPagination(prev => ({
+      ...prev,
+      page: 1
+    }));
   }, [filter, searchTerm]);
 
   const fetchEmails = async () => {
@@ -42,11 +60,18 @@ export default function EmailsPage() {
       const params = new URLSearchParams();
       if (filter !== 'all') params.append('status', filter);
       if (searchTerm) params.append('search', searchTerm);
+      params.append('page', pagination.page.toString());
+      params.append('limit', pagination.limit.toString());
       
       const response = await fetch(`/api/emails?${params}`);
       const data = await response.json();
       setEmails(data.emails || []);
       setStats(data.stats || {});
+      setPagination(prev => ({
+        ...prev,
+        total: data.pagination?.total || 0,
+        pages: data.pagination?.pages || 0
+      }));
     } catch (error) {
       console.error('Error fetching emails:', error);
     } finally {
@@ -67,6 +92,25 @@ export default function EmailsPage() {
   const handleEmailSelect = (email) => {
     setSelectedEmail(email);
     fetchConversation(email.id);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({
+      ...prev,
+      page: newPage
+    }));
+    setSelectedEmail(null);
+    setConversation(null);
+  };
+
+  const handleLimitChange = (newLimit) => {
+    setPagination(prev => ({
+      ...prev,
+      page: 1,
+      limit: newLimit
+    }));
+    setSelectedEmail(null);
+    setConversation(null);
   };
 
   const getStatusColor = (status) => {
@@ -284,8 +328,17 @@ export default function EmailsPage() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Lista Emaili ({emails.length})</CardTitle>
-              <CardDescription className="text-xs">Kliknij na email aby zobaczyć szczegóły</CardDescription>
+              <CardTitle className="text-sm">
+                Lista Emaili ({emails.length}{pagination.total > emails.length ? ` z ${pagination.total}` : ''})
+              </CardTitle>
+                              <CardDescription className="text-xs">
+                  Kliknij na email aby zobaczyć szczegóły
+                  {pagination.pages > 1 && (
+                    <span className="ml-2 text-blue-600">
+                      • Strona {pagination.page}/{pagination.pages}
+                    </span>
+                  )}
+                </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="px-3 pb-3">
@@ -366,6 +419,79 @@ export default function EmailsPage() {
                   </div>
                 )}
               </div>
+              
+              {/* Paginacja */}
+              {pagination.pages > 1 && (
+                <div className="px-3 py-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600">
+                        Strona {pagination.page} z {pagination.pages}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({pagination.total} emaili)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={pagination.page === 1}
+                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Pierwsza strona"
+                      >
+                        <ChevronsLeft className="w-3 h-3" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={pagination.page === 1}
+                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Poprzednia strona"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      
+                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                        {pagination.page}
+                      </span>
+                      
+                      <button
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={pagination.page === pagination.pages}
+                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Następna strona"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handlePageChange(pagination.pages)}
+                        disabled={pagination.page === pagination.pages}
+                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Ostatnia strona"
+                      >
+                        <ChevronsRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Wybór liczby elementów na stronie */}
+                  <div className="flex items-center justify-center mt-2 pt-2 border-t border-gray-100">
+                    <span className="text-xs text-gray-600 mr-2">Emaili na stronie:</span>
+                    <select
+                      value={pagination.limit}
+                      onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -431,30 +557,34 @@ export default function EmailsPage() {
                     </div>
 
                     {/* Treść Oryginalnego Emaila - kompaktowa */}
-                                         <div className="compact-section bg-gray-50 border-gray-400">
-                       <div className="flex items-center gap-2 mb-2">
-                         <Mail className="w-3 h-3 text-gray-600" />
-                         <span className="font-medium text-xs text-gray-900">Treść Oryginalnego Emaila</span>
-                       </div>
-                       <div className="compact-content">
-                         {selectedEmail.content}
-                       </div>
-                     </div>
+                    <div className="compact-section bg-gray-50 border-gray-400">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Mail className="w-3 h-3 text-gray-600" />
+                        <span className="font-medium text-xs text-gray-900">Treść Oryginalnego Emaila</span>
+                      </div>
+                      <div className="email-content-container">
+                        <div className="compact-content">
+                          {selectedEmail.content}
+                        </div>
+                      </div>
+                    </div>
 
                     {/* AI Response - kompaktowa */}
                     {selectedEmail.response && (
-                                             <div className="compact-section bg-green-50 border-green-400">
-                         <div className="flex items-center gap-2 mb-2">
-                           <Reply className="w-3 h-3 text-green-600" />
-                           <span className="font-medium text-xs text-green-900">Wygenerowana Odpowiedź AI</span>
-                           <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded-full ml-auto">
-                             Gotowa
-                           </span>
-                         </div>
-                         <div className="compact-content">
-                           {selectedEmail.response}
-                         </div>
-                       </div>
+                      <div className="compact-section bg-green-50 border-green-400">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Reply className="w-3 h-3 text-green-600" />
+                          <span className="font-medium text-xs text-green-900">Wygenerowana Odpowiedź AI</span>
+                          <span className="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded-full ml-auto">
+                            Gotowa
+                          </span>
+                        </div>
+                        <div className="email-content-container">
+                          <div className="compact-content">
+                            {selectedEmail.response}
+                          </div>
+                        </div>
+                      </div>
                     )}
 
                     {/* Conversation Messages - kompaktowe */}
@@ -488,9 +618,11 @@ export default function EmailsPage() {
                                     {formatDate(message.timestamp)}
                                   </span>
                                 </div>
-                                 <div className="compact-content">
-                                   {message.content}
-                                 </div>
+                                <div className="email-content-container">
+                                  <div className="compact-content">
+                                    {message.content}
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
